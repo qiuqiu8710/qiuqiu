@@ -1,0 +1,84 @@
+[class *="col-"] {
+	background-color: #eee;
+	border-top: 1px solid #ddd;
+	border-top: 1px solid rgba(86, 61, 124, .2);
+	background-color: rgba(86, 61, 124, .15);
+}
+
+.nav>li>a:hover,.nav>li>a:focus {
+	text-decoration: none;
+	background-color: #B0C4DE;
+}
+
+.table-striped > tbody > tr:nth-child(odd) > td,
+.table-striped > tbody > tr:nth-child(odd) > th {
+  background-color:#fff ;
+}
+
+.table {
+	table-layout: fixed;
+	width: 100%
+}
+
+fieldset {
+  padding: .35em .625em .75em;
+  margin: 0 2px;
+  border: 1px solid #c0c0c0;
+}
+
+legend {
+	display: block;
+	width: auto;
+	padding: 0;
+	margin-bottom: 21px;
+	font-size: 22.5px;
+	line-height: inherit;
+	color: #2c3e50;
+	border: 0;
+	border-bottom: 1px solid transparent;
+}
+
+form>fieldset>label {
+	margin-right:10px;
+}
+
+.table>tbody>tr>td {
+	word-break: keep-all; /* 不换行 */
+	white-space: nowrap; /* 不换行 */
+	overflow: hidden; /* 内容超出宽度时隐藏超出部分的内容 */
+	text-overflow: ellipsis;
+	/* 当对象内文本溢出时显示省略标记(...) ；需与overflow:hidden;一起使用。*/
+}
+
+.table>tbody>tr>td>a {
+	text-decoration: none;
+}
+
+.navbar {
+	margin-bottom: 0px;
+}
+
+.pagination {
+	margin: 0 0;
+}
+
+.index_mainMenu {
+	
+}
+
+.index_homePage {
+	
+}
+
+.grid_selected {
+	
+}
+
+
+.tab_close {
+	width: 0;
+	height: 0;
+	margin-left: 4px;
+	border-top: 7px solid;
+	border-left: 7px solid transparent;
+}

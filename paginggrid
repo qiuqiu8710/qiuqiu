@@ -1,0 +1,211 @@
+//create grid
+var PageGrid = function(config) {
+
+	var header = config.fields;// 表头配置
+	var theader = "<thead><tr>";
+	var tbody = "<tbody style='visibility:hidden'>";
+	var record = "";// 
+	var table = '<table class="table table-hover table-bordered">';
+	for ( var i = 0; i < header.length; i++) {
+		theader += ('<th>' + header[i].text + '</th>');
+		record += ('<td self_name="' + header[i].name + '"></td>');
+	}
+	theader += "</tr></thead>";
+	table += theader;
+
+	var pageSize = config.pageSize;//
+	for ( var i = 0; i < pageSize; i++) {
+		tbody += "<tr onclick='PageGrid.prototype.rowSelect(this);'>" + record + "</tr>";
+	}
+
+	table += tbody;
+	table += "</tbody></table>";
+
+	this.pageSize = pageSize;
+	this.start = 1;
+	this.url = config.url;
+	this.params = config.params
+	this.renderTo = config.renderTo;
+	this.pageBarNum=1;//分页bar的起始num
+	this.pageBarSize=8;//分页bar每次最多显示的个数
+	$('#' + config.renderTo).append($(table));
+}
+
+//点击选择row
+PageGrid.prototype.rowSelect=function(object){
+	var item=$(object);
+	
+	if(this.currentRow){
+		this.currentRow.css("background-color",this.preClass);
+		this.currentRow.attr("class","");
+	}
+
+	this.preClass=item.css("background-color");
+	this.currentRow=item;
+	item.css("background-color","#eee");
+	item.attr("class","grid_selected");
+
+}
+
+//取出selected data
+PageGrid.prototype.getSelect=function(){
+	var grid = this;
+	
+	var tr = $('#' + grid.renderTo).find('table>tbody>tr.grid_selected');
+	
+	if(tr.length==0){
+		return ;
+	}
+	var aValues=tr.find('td');
+	
+	var data={};
+	
+	for(var i=0;i<aValues.length;i++){
+		var item=$(aValues[i]);
+		data[item.attr('self_name')]=item.text();
+	}
+	return data;
+}
+
+
+// load data
+PageGrid.prototype.load = function(start) {
+	var grid = this;
+	if(start==1){
+		grid.pageBarNum=1;
+	}
+	//清除行表格样式
+	if(grid.currentRow){
+		grid.currentRow.css("background-color",this.preClass);
+		grid.currentRow.attr("class","");
+	}
+
+	$
+			.ajax( {
+				url : grid.url + '?start=' + start + "&pageSize="
+						+ grid.pageSize + "&" + grid.params,
+				async : false,
+				success : function(data) {
+					data = eval("(" + data + ")");
+					// 创建分页菜单
+					var total = data.total
+					grid.start = start;
+					var pageNum = parseInt(total / grid.pageSize + 1);
+					var pageBarNum=parseInt(pageNum/grid.pageBarSize)+1;//分页bar的页数
+					var pageBar = '<div style="float:right;"><ul class="pagination pagination-lg"><li><span class="label label-success">共'+pageNum+'页,'+total+'条</span></li><li><span direction="pre">«</span></li>';
+					for ( var i = 1; i <= pageNum; i++) {
+						if(i<=(grid.pageBarNum-1)*grid.pageBarSize||i>grid.pageBarNum*grid.pageBarSize){
+							continue;
+						}
+						pageBar += ('<li class="'
+								+ (grid.start == i ? 'active' : '')
+								+ '"><a href="javascript:void(0)">' + i + '</a></li>');
+					}
+					pageBar += "<li><span  direction='next'>»</span></li></ul></div>";
+					
+					$('ul[class="pagination pagination-lg"]>li>a').unbind('click');//解除原有DOM的click event
+					$('ul[class="pagination pagination-lg"]>li>span').unbind('click');
+					$('ul[class="pagination pagination-lg"]').remove();// 删除原有分页bar
+
+					$('#' + grid.renderTo).append(pageBar);// 添加新的bar
+					$('ul[class="pagination pagination-lg"]>li>a').bind(
+							'click', function() {
+								var index = $(this).text();
+								grid.load(index);
+							});
+					$('ul[class="pagination pagination-lg"]>li>span').bind('click',function(){
+						
+						var item=$(this);
+						
+						if(item.attr('direction')=='pre'){
+							if(grid.start==1){return;}
+							
+							var start=parseInt(grid.start)-1;
+							if(start<(grid.pageBarNum-1)*grid.pageBarSize+1&&grid.pageBarNum>1){
+								grid.pageBarNum--;
+							}
+							grid.load(start);
+							
+						}else{
+							if(grid.start==pageNum){
+								return;
+							}
+							var start=parseInt(grid.start)+1;
+							if(start>grid.pageBarNum*grid.pageBarSize&&grid.pageBarNum<pageBarNum){
+								grid.pageBarNum++;
+							}
+							grid.load(start);
+						}
+						
+					});
+					
+					// 加载数据
+					var rows = data.rows;
+					var trs = $('#' + grid.renderTo).find('table>tbody>tr');
+
+					for ( var i = 0; i < trs.length; i++) {
+						var tds = $(trs[i]).children();
+						for ( var j = 0; j < tds.length; j++) {
+							var tdsItem = $(tds[j]);
+							if (rows[i]) {
+								if (rows[i][tdsItem.attr('self_name')]) {
+									tdsItem
+											.html("<a title='"
+													+ rows[i][tdsItem
+															.attr('self_name')]
+													+ "'>"
+													+ rows[i][tdsItem
+															.attr('self_name')]
+													+ "</a>");
+								} else {
+									tdsItem
+									.html("<a>"
+											+ tdsItem
+													.attr('self_name')
+											+ "</a>");
+						}
+							} else {
+								tdsItem.html("<a>invisible</a>");
+								tdsItem.children().css('visibility', 'hidden');
+							}
+						}
+					}
+					$('#' + grid.renderTo).find('table>tbody').css(
+							'visibility', 'visible');
+				},
+				type : 'GET'
+			});
+}
+
+
+-------------------------------------------------end-------------------------------------------------------
+
+eg：
+	var messageList=new PageGrid({
+		renderTo:'messageListGrid',
+		fields:[{
+			name:'id',
+			text:'ID'
+		},{
+			name:'from_user_id',
+			text:'发消息用户ID'
+		},{
+			name:'to_user_id',
+			text:'接受用户ID'
+		},{
+			name:'create_time',
+			text:'创建时间',
+		},{
+			name:'req_type',
+			text:'消息类型'
+		},{
+			name:'req_text',
+			text:'消息内容'
+		}],
+		pageSize:15,
+		url:path+'/messageMgr/qryList.do',
+		params:''
+	});
+	
+	// load data
+	messageList.load(1);
